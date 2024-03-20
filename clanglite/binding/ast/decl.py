@@ -1,68 +1,165 @@
+from clanglite.binding.config import dll
 from clanglite.binding.cursor import Cursor
+from clanglite.binding.type import Type
+from clanglite.binding.ast.expr import Expr
+from clanglite.binding.ast.attr import Attr
 
 
 class Decl(Cursor):
+
+    def attributes(self) -> list[Attr]:
+        """get the attributes of a declaration."""
+        pass
     pass
 
 
 class UnexposedDecl(Decl):
     """A declaration whose specific kind is not exposed via this interface."""
 
-    __kind__ = 1
+    __cursor_kind__ = 1
 
 
 class StructDecl(Decl):
     """A C or C++ struct."""
 
-    __kind__ = 2
+    __cursor_kind__ = 2
+
+    @property
+    def name(self) -> str:
+        """get the name of a struct declaration."""
+        return self.spelling
+
+    @property
+    def fields(self) -> list['FieldDecl']:
+        """get the non-static data member of a struct declaration."""
+        return [c for c in self.get_children() if c.kind == FieldDecl.__cursor_kind__]
+
+    @property
+    def methods(self) -> list['MethodDecl']:
+        """get the methods of a struct declaration."""
+        return [c for c in self.get_children() if c.kind == MethodDecl.__cursor_kind__]
 
 
 class UnionDecl(Decl):
     """A C or C++ union."""
 
-    __kind__ = 3
+    __cursor_kind__ = 3
 
 
 class ClassDecl(Decl):
     """A C++ class."""
 
-    __kind__ = 4
+    __cursor_kind__ = 4
+
+    @property
+    def name(self) -> str:
+        """get the name of a struct declaration."""
+        return self.spelling
+
+    @property
+    def fields(self) -> list['FieldDecl']:
+        """get the non-static data member of a struct declaration."""
+        return [c for c in self.get_children() if c.kind == FieldDecl.__cursor_kind__]
+
+    @property
+    def methods(self) -> list['MethodDecl']:
+        """get the methods of a struct declaration."""
+        return [c for c in self.get_children() if c.kind == MethodDecl.__cursor_kind__]
 
 
 class EnumDecl(Decl):
     """An enumeration."""
 
-    __kind__ = 5
+    __cursor_kind__ = 5
+
+    @property
+    def name(self) -> str:
+        """get the name of a struct declaration."""
+        return self.spelling
+
+    @property
+    def underlying_type(self) -> Type:
+        """get the integer type of an enum declaration."""
+
+        if not hasattr(self, "_enum_type"):
+            self._enum_type = dll.clang_getEnumDeclIntegerType(self)
+        return self._enum_type
+
+    @property
+    def enumerators(self) -> list['EnumConstantDecl']:
+        """get the enumerators of an enum declaration."""
+        return [c for c in self.get_children() if c.kind == EnumConstantDecl.__cursor_kind__]
+
+    def is_scoop_enum(self) -> bool:
+        """judge an enum declaration is a scoped enum."""
+        return dll.clang_EnumDecl_isScoped(self)
 
 
 class FieldDecl(Decl):
     """A field (non-static data member) in a struct, union, or C++ class."""
 
-    __kind__ = 6
+    __cursor_kind__ = 6
+
+    @property
+    def name(self) -> str:
+        """get the name of a field declaration."""
+        return self.spelling
+
+    @property
+    def type(self) -> Type:
+        """get the type of a field declaration."""
+        return dll.clang_getCursorType(self)
+
+    @property
+    def default_value(self) -> Expr | None:
+        """get the default value of a field declaration."""
+        # TODO with get children
+
+        # return dll.clang_getCursorDefaultValue(self)
 
 
 class EnumConstantDecl(Decl):
     """An enumerator constant."""
 
-    __kind__ = 7
+    __cursor_kind__ = 7
+
+    @property
+    def name(self) -> str:
+        """get the name of an enum constant declaration."""
+        return self.spelling
+
+    @property
+    def type(self) -> Type:
+        """get the integer type of an enum constant declaration."""
+        return dll.clang_getEnumDeclIntegerType(self)
+
+    @property
+    def value(self) -> int:
+        """retrieve the integer value of an enum constant declaration."""
+        if self.type.is_signed:
+            self._enum_value = dll.clang_getEnumConstantDeclValue(self)
+        else:
+            self._enum_value = dll.clang_getEnumConstantDeclUnsignedValue(self)
+
+        return self._enum_value
 
 
 class FunctionDecl(Decl):
     """A function."""
 
-    __kind__ = 8
+    __cursor_kind__ = 8
 
 
 class VarDecl(Decl):
     """A variable."""
 
-    __kind__ = 9
+    __cursor_kind__ = 9
 
 
 class ParmDecl(Decl):
     """A function or method parameter."""
 
-    __kind__ = 10
+    __cursor_kind__ = 10
 
 # some OBJC decls have been removed
 
@@ -70,133 +167,133 @@ class ParmDecl(Decl):
 class TypedefDecl(Decl):
     """A typedef."""
 
-    __kind__ = 20
+    __cursor_kind__ = 20
 
 
-class CXXMethod(Decl):
+class MethodDecl(Decl):
     """A C++ class method."""
 
-    __kind__ = 21
+    __cursor_kind__ = 21
 
 
 class Namespace(Decl):
     """A C++ namespace."""
 
-    __kind__ = 22
+    __cursor_kind__ = 22
 
 
 class LinkageSpec(Decl):
     """A linkage specification, e.g. 'extern "C" { ... }'."""
 
-    __kind__ = 23
+    __cursor_kind__ = 23
 
 
 class Constructor(Decl):
     """A C++ constructor."""
 
-    __kind__ = 24
+    __cursor_kind__ = 24
 
 
 class Destructor(Decl):
     """A C++ destructor."""
 
-    __kind__ = 25
+    __cursor_kind__ = 25
 
 
 class ConversionFunction(Decl):
     """A C++ conversion function."""
 
-    __kind__ = 26
+    __cursor_kind__ = 26
 
 
 class TemplateTypeParameter(Decl):
     """A C++ template type parameter."""
 
-    __kind__ = 27
+    __cursor_kind__ = 27
 
 
 class NonTypeTemplateParameter(Decl):
     """A C++ non-type template parameter."""
 
-    __kind__ = 28
+    __cursor_kind__ = 28
 
 
 class TemplateTemplateParameter(Decl):
     """A C++ template template parameter."""
 
-    __kind__ = 29
+    __cursor_kind__ = 29
 
 
 class FunctionTemplate(Decl):
     """A C++ function template."""
 
-    __kind__ = 30
+    __cursor_kind__ = 30
 
 
 class ClassTemplate(Decl):
     """A C++ class template."""
 
-    __kind__ = 31
+    __cursor_kind__ = 31
 
 
 class ClassTemplatePartialSpecialization(Decl):
     """A C++ class template partial specialization."""
 
-    __kind__ = 32
+    __cursor_kind__ = 32
 
 
 class NamespaceAlias(Decl):
     """A C++ namespace alias declaration."""
 
-    __kind__ = 33
+    __cursor_kind__ = 33
 
 
 class UsingDirective(Decl):
     """A C++ using directive."""
 
-    __kind__ = 34
+    __cursor_kind__ = 34
 
 
 class UsingDeclaration(Decl):
     """A C++ using declaration."""
 
-    __kind__ = 35
+    __cursor_kind__ = 35
 
 
 class TypeAliasDecl(Decl):
     """A C++ alias declaration."""
 
-    __kind__ = 36
+    __cursor_kind__ = 36
 
 
 class CXXAccessSpecifier(Decl):
     """A C++ access specifier."""
 
-    __kind__ = 39
+    __cursor_kind__ = 39
 
 
 class ModuleImportDecl(Decl):
     """A module import declaration."""
 
-    __kind__ = 600
+    __cursor_kind__ = 600
 
 
 class TypeAliasTemplateDecl(Decl):
     """A C++ alias template declaration."""
 
-    __kind__ = 601
+    __cursor_kind__ = 601
 
 
 class FriendDecl(Decl):
     """A friend declaration."""
 
-    __kind__ = 603
+    __cursor_kind__ = 603
 
 
 class ConceptDecl(Decl):
     """A C++20 concept declaration."""
 
-    __kind__ = 604
+    __cursor_kind__ = 604
 
 
 def register():
@@ -204,7 +301,7 @@ def register():
     for name, cls in globals().items():
         if inspect.isclass(cls) and issubclass(cls, Decl):
             if cls is not Cursor and cls is not Decl:
-                Cursor.__all_kinds__[cls.__kind__] = cls
+                Cursor.__all_kinds__[cls.__cursor_kind__] = cls
 
 
 register()

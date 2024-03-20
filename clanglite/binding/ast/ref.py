@@ -22,12 +22,12 @@ class TypeRef(Ref):
     referenced by the type of size is the typedef for `size_type`.
     """
 
-    __kind__ = 43
+    __cursor_kind__ = 43
 
 
 class CXXBaseSpecifier(Ref):
 
-    __kind__ = 44
+    __cursor_kind__ = 44
 
 
 class TemplateRef(Ref):
@@ -36,12 +36,12 @@ class TemplateRef(Ref):
     template parameter, or class template partial specialization.
     """
 
-    __kind__ = 45
+    __cursor_kind__ = 45
 
 
 class NamespaceRef(Ref):
     """A reference to a namespace or namespace alias."""
-    __kind__ = 46
+    __cursor_kind__ = 46
 
 
 class MemberRef(Ref):
@@ -49,7 +49,7 @@ class MemberRef(Ref):
     A reference to a member of a struct, union, or class that occurs in
     some non-expression context, e.g., a designated initializer.
     """
-    __kind__ = 47
+    __cursor_kind__ = 47
 
 
 class LabelRef(Ref):
@@ -69,7 +69,7 @@ class LabelRef(Ref):
     A label reference cursor refers to a label statement.
 
     """
-    __kind__ = 48
+    __cursor_kind__ = 48
 
 
 class OverloadedDeclRef(Ref):
@@ -109,7 +109,7 @@ class OverloadedDeclRef(Ref):
     used to retrieve the definitions referenced by this cursor.
     """
 
-    __kind__ = 49
+    __cursor_kind__ = 49
 
 
 class VariableRef(Ref):
@@ -117,14 +117,14 @@ class VariableRef(Ref):
     A reference to a variable that occurs in some non-expression
     context, e.g., a C++ lambda capture list.
     """
-    __kind__ = 50
+    __cursor_kind__ = 50
 
 
 def register():
     import inspect
     for name, cls in globals().items():
         if inspect.isclass(cls) and issubclass(cls, Ref) and cls is not Ref:
-            Cursor.__all_kinds__[cls.__kind__] = cls
+            Cursor.__all_kinds__[cls.__cursor_kind__] = cls
 
 
 register()
