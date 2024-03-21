@@ -36,9 +36,17 @@ class StaticAssert(Cursor):
 
 def register():
     import inspect
-    for name, cls in globals().items():
-        if inspect.isclass(cls) and cls is not Cursor:
-            Cursor.__all_kinds__[cls.__cursor_kind__] = cls
+
+    all_kinds = Cursor.__all_kinds__
+    for _, cls in globals().items():
+        if inspect.isclass(cls) and hasattr(cls, "__cursor_kind__"):
+            kind: int | list[int] = cls.__cursor_kind__
+
+            if isinstance(kind, int):
+                all_kinds[kind] = cls
+            else:
+                for k in kind:
+                    all_kinds[k] = cls
 
 
 register()

@@ -14,7 +14,7 @@ class Expr(Cursor):
     def is_constant(self) -> bool:
         """judge an expression can be constant"""
         # TODO add is constant expression to libclang
-        pass
+        return False
 
 
 class UnexposedExpr(Expr):
@@ -63,6 +63,10 @@ class CallExpr(Expr):
     """
 
     __cursor_kind__ = 103
+
+    @property
+    def caller(self) -> Expr:
+        return Expr(self.get_children()[0])
 
 
 class BlockExpr(Expr):
@@ -128,6 +132,10 @@ class ParenExpr(Expr):
 
     __cursor_kind__ = 111
 
+    @property
+    def subexpr(self) -> Expr:
+        return Expr(self.get_children()[0])
+
 
 # The UnaryExpr actually is libclang's UnaryOperator
 class UnaryExpr(Expr):
@@ -135,7 +143,7 @@ class UnaryExpr(Expr):
     A unary operator expression.
     """
 
-    __cursor_kind__ = 112
+    __cursor_kind__ = [112, 136]
     __all_operators__ = [
         " ++", " --", "++ ", "-- ", "&", "*", "+",
         "-", "~", "!", "__real", "__imag", "__extension__", "co_await"
@@ -143,15 +151,21 @@ class UnaryExpr(Expr):
 
     @property
     def operator(self) -> str:
-        kind = dll.clang_getCursorUnaryOperatorKind(self)
+        kind: int = dll.clang_getCursorUnaryOperatorKind(self)
         return UnaryExpr.__all_operators__[kind - 1]
 
+    @property
+    def subexpr(self) -> Expr:
+        return Expr(self.get_children()[0])
 
-# The BinaryExpr is a combination of libclang's BinaryOperator and CompoundAssignOperator
+
+# The BuiltinBinaryExpr is a combination of libclang's BinaryOperator and CompoundAssignOperator
 class BinaryExpr(Expr):
     """
     A binary operator expression.
     """
+
+    # TODO add CXXOperatorCallExpr for overloaded operator
 
     __cursor_kind__ = [114, 115]
     __all_operators__ = [
@@ -162,8 +176,16 @@ class BinaryExpr(Expr):
 
     @property
     def operator(self) -> str:
-        kind = dll.clang_getCursorBinaryOperatorKind(self)
+        kind: int = dll.clang_getCursorBinaryOperatorKind(self)
         return BinaryExpr.__all_operators__[kind - 1]
+
+    @property
+    def lhs(self) -> Expr:
+        return Expr(self.get_children()[0])
+
+    @property
+    def rhs(self) -> Expr:
+        return Expr(self.get_children()[1])
 
 
 class ArraySubscriptExpr(Expr):
@@ -361,14 +383,6 @@ class CXXDeleteExpr(Expr):
     __cursor_kind__ = 135
 
 
-class UnaryExpr(Expr):
-    """
-    A unary expression.
-    """
-
-    __cursor_kind__ = 136
-
-
 class PackExpansionExpr(Expr):
     """
     Represents a C++0x pack expansion that produces a sequence of
@@ -450,13 +464,13 @@ def register():
 
     all_kinds = Cursor.__all_kinds__
 
-    for name, cls in globals().items():
+    for _, cls in globals().items():
         if inspect.isclass(cls) and hasattr(cls, "__cursor_kind__"):
-            kind = cls.__cursor_kind__
+            kind: int | list[int] = cls.__cursor_kind__
 
             if isinstance(kind, int):
                 all_kinds[kind] = cls
-            elif isinstance(kind, list):
+            else:
                 for k in kind:
                     all_kinds[k] = cls
 

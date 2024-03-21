@@ -1,14 +1,17 @@
 from os import fspath
-from ctypes import *
+from ctypes import c_char_p
 from clanglite.binding.config import dll, CXIndex, CXTranslationUnit
 from clanglite.binding.cursor import Cursor
-from typing import Callable
+from typing import Callable, TypeVar, Any
 
 
-class Index(c_void_p):
+class Index(CXIndex):
+
+    def __init__(self, index: CXIndex) -> None:
+        super().__init__(index.value)
 
     @staticmethod
-    def create(cxx=0, exclude_decls=0) -> 'Index':
+    def create(cxx: int = 0, exclude_decls: int = 0) -> 'Index':
         return Index(dll.clang_createIndex(cxx, exclude_decls))
 
     def parse(self, filepath: str, args: list[str]) -> 'TranslationUnit':
@@ -19,7 +22,10 @@ class Index(c_void_p):
         dll.clang_disposeIndex(self)
 
 
-class TranslationUnit(c_void_p):
+class TranslationUnit(CXTranslationUnit):
+
+    def __init__(self, tu: CXTranslationUnit) -> None:
+        super().__init__(tu.value)
 
     @property
     def cursor(self) -> Cursor:
@@ -35,6 +41,9 @@ class TranslationUnit(c_void_p):
         dll.clang_disposeTranslationUnit(self)
 
 
+T = TypeVar('T')
+
+
 class Parser:
 
     def __init__(self, filepath: str, args: list[str] = []) -> None:
@@ -42,24 +51,17 @@ class Parser:
         self.args = args
         self.index = Index.create()
         self.tu = self.index.parse(filepath, args)
-        self.matchers: dict[int, (type, Callable)] = {}
+        self.matchers: dict[type, Any] = {}
 
-    def add_matcher(self, ast_node: type, matcher: Callable) -> None:
-        kind = ast_node.__cursor_kind__
-        if isinstance(kind, int):
-            self.matchers[kind] = (ast_node, matcher)
-        elif isinstance(kind, list):
-            for k in kind:
-                self.matchers[k] = (ast_node, matcher)
+    def add_matcher(self, cls: type[T], matcher: Callable[[T], Any]) -> None:
+        self.matchers[cls] = matcher
 
     def run(self) -> None:
 
         def tarverse(cursor: Cursor):
-            kind = cursor.kind
-
-            if kind in self.matchers:
-                ast_node, matcher = self.matchers[kind]
-                matcher(ast_node(cursor))
+            cls = cursor.kind
+            if cls in self.matchers:
+                self.matchers[cls](cls(cursor))
 
             for child in cursor.get_children():
                 tarverse(child)

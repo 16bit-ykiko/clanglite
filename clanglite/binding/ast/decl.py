@@ -9,8 +9,7 @@ class Decl(Cursor):
 
     def attributes(self) -> list[Attr]:
         """get the attributes of a declaration."""
-        pass
-    pass
+        return []
 
 
 class UnexposedDecl(Decl):
@@ -32,12 +31,12 @@ class StructDecl(Decl):
     @property
     def fields(self) -> list['FieldDecl']:
         """get the non-static data member of a struct declaration."""
-        return [c for c in self.get_children() if c.kind == FieldDecl.__cursor_kind__]
+        return [FieldDecl(c) for c in self.get_children() if c.kind == FieldDecl]
 
     @property
     def methods(self) -> list['MethodDecl']:
         """get the methods of a struct declaration."""
-        return [c for c in self.get_children() if c.kind == MethodDecl.__cursor_kind__]
+        return [MethodDecl(c) for c in self.get_children() if c.kind == MethodDecl]
 
 
 class UnionDecl(Decl):
@@ -59,12 +58,12 @@ class ClassDecl(Decl):
     @property
     def fields(self) -> list['FieldDecl']:
         """get the non-static data member of a struct declaration."""
-        return [c for c in self.get_children() if c.kind == FieldDecl.__cursor_kind__]
+        return [FieldDecl(c) for c in self.get_children() if c.kind == FieldDecl]
 
     @property
     def methods(self) -> list['MethodDecl']:
         """get the methods of a struct declaration."""
-        return [c for c in self.get_children() if c.kind == MethodDecl.__cursor_kind__]
+        return [MethodDecl(c) for c in self.get_children() if c.kind == MethodDecl]
 
 
 class EnumDecl(Decl):
@@ -88,7 +87,7 @@ class EnumDecl(Decl):
     @property
     def enumerators(self) -> list['EnumConstantDecl']:
         """get the enumerators of an enum declaration."""
-        return [c for c in self.get_children() if c.kind == EnumConstantDecl.__cursor_kind__]
+        return [EnumConstantDecl(c) for c in self.get_children() if c.kind == EnumConstantDecl]
 
     def is_scoop_enum(self) -> bool:
         """judge an enum declaration is a scoped enum."""
@@ -298,10 +297,18 @@ class ConceptDecl(Decl):
 
 def register():
     import inspect
-    for name, cls in globals().items():
-        if inspect.isclass(cls) and issubclass(cls, Decl):
-            if cls is not Cursor and cls is not Decl:
-                Cursor.__all_kinds__[cls.__cursor_kind__] = cls
+
+    all_kinds = Cursor.__all_kinds__
+
+    for _, cls in globals().items():
+        if inspect.isclass(cls) and hasattr(cls, "__cursor_kind__"):
+            kind: int | list[int] = cls.__cursor_kind__
+
+            if isinstance(kind, int):
+                all_kinds[kind] = cls
+            else:
+                for k in kind:
+                    all_kinds[k] = cls
 
 
 register()

@@ -1,5 +1,5 @@
-import os
-from ctypes import *
+from ctypes import c_uint, c_void_p, c_int, c_char_p, c_ulong, c_longlong, c_ulonglong, py_object, CDLL, Structure
+from typing import Any
 
 
 class CXString(Structure):
@@ -7,6 +7,10 @@ class CXString(Structure):
         ("data", c_void_p),
         ("private_flags", c_uint)
     ]
+
+    @staticmethod
+    def to_python_string(result: 'CXString', func: Any, arguments: Any) -> str:
+        return dll.clang_getCString(result).decode("utf8")
 
 
 class CXSourceLocation(Structure):
@@ -24,19 +28,18 @@ class CXSourceRange(Structure):
     ]
 
 
+class CXType(Structure):
+    _fields_ = [
+        ("xkind", c_int),
+        ("data", c_void_p * 2)
+    ]
+
+
 class CXCursor(Structure):
     _fields_ = [
         ("xkind", c_int),
         ("xdata", c_int),
         ("data", c_void_p * 3)
-    ]
-
-    
-
-class CXType(Structure):
-    _fields_ = [
-        ("xkind", c_int),
-        ("data", c_void_p * 2)
     ]
 
 
@@ -63,7 +66,11 @@ class CXTranslationUnit(c_void_p):
     pass
 
 
-functions = [
+class CXFile(c_void_p):
+    pass
+
+
+functions: list[Any] = [
     # CXString.h
     ("clang_getCString", [CXString], c_char_p),
     ("clang_disposeString", [CXString], None),
@@ -71,29 +78,44 @@ functions = [
     # Index.h
 
     # CXIndex
-    ("clang_createIndex", [c_int, c_int], c_void_p),
-    ("clang_disposeIndex", [c_void_p], None),
+    ("clang_createIndex", [c_int, c_int], CXIndex),
+    ("clang_disposeIndex", [CXIndex], None),
 
     # CXTranslationUnit
     ("clang_parseTranslationUnit", [c_void_p, c_char_p, c_void_p, c_int,
-                                    c_void_p, c_uint, c_uint], c_void_p),
-    ("clang_getTranslationUnitCursor", [c_void_p], CXCursor),
-    ("clang_getTranslationUnitSpelling", [c_void_p], CXString),
-    ("clang_disposeTranslationUnit", [c_void_p], None),
+                                    c_void_p, c_uint, c_uint], CXTranslationUnit),
+    ("clang_getTranslationUnitCursor", [CXTranslationUnit], CXCursor),
+    ("clang_getTranslationUnitSpelling", [
+     CXTranslationUnit], CXString),
+    ("clang_disposeTranslationUnit", [CXTranslationUnit], None),
 
+    # SourceLocation
+    ("clang_getInstantiationLocation", [
+     CXSourceLocation, c_void_p, c_void_p, c_void_p, c_void_p], None),
+    ("clang_equalLocations", [CXSourceLocation, CXSourceLocation], bool),
+
+
+    ("clang_getRangeStart", [CXSourceRange], CXSourceLocation),
+    ("clang_getRangeEnd", [CXSourceRange], CXSourceLocation),
+    ("clang_getRange", [CXSourceLocation, CXSourceLocation], CXSourceRange),
+    ("clang_equalRanges", [CXSourceRange, CXSourceRange], bool),
 
 
     # CXCursor
-    ("clang_getNullCursor", [], CXCursor),  # Index.h 2283
+    ("clang_getNullCursor", [], CXCursor),
+    ("clang_getCursorLocation", [CXCursor], CXSourceLocation),
+    ("clang_getCursorExtent", [CXCursor], CXSourceRange),
+    ("clang_getCursorSpelling", [CXCursor], CXString),
+    ("clang_getCursorDisplayName", [CXCursor], CXString),
+    ("clang_Cursor_getMangling", [CXCursor], CXString),
 
+    
     ("clang_equalCursors", [CXCursor, CXCursor], c_uint),
     ("clang_Cursor_isNull", [CXCursor], c_uint),
     ("clang_hashCursor", [CXCursor], c_uint),
-    ("clang_getCursorKind", [CXCursor], c_int),
     ("clang_isDeclaration", [c_int], c_uint),
     ("clang_isInvalidDeclaration", [c_int], c_uint),  # Index.h 2326
-    ("clang_getCursorKindSpelling", [c_int], CXString),
-    ("clang_getCursorSpelling", [CXCursor], CXString),
+
     ("clang_visitChildren", [CXCursor, c_void_p, py_object], c_uint),
 
     # Enum
@@ -113,11 +135,13 @@ functions = [
 ]
 
 
-def register_function(lib):
+def register_function(lib: CDLL):
     for func in functions:
         f = getattr(lib, func[0])
         f.argtypes = func[1]
         f.restype = func[2]
+        if func[2] is CXString:
+            f.errcheck = CXString.to_python_string
 
 
 dll = CDLL("/home/ykiko/Project/C++/llvm-project/build/lib/libclang.so")
