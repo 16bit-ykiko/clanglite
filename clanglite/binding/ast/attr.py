@@ -89,22 +89,3 @@ class WarnUnusedResultAttr:
 
 class AlignedAttr:
     __cursor_kind__ = 441
-
-
-def register():
-    import inspect
-
-    all_kinds = Cursor.__all_kinds__
-
-    for _, cls in globals().items():
-        if inspect.isclass(cls) and hasattr(cls, "__cursor_kind__"):
-            kind: int | list[int] = cls.__cursor_kind__
-
-            if isinstance(kind, int):
-                all_kinds[kind] = cls
-            else:
-                for k in kind:
-                    all_kinds[k] = cls
-
-
-register()
