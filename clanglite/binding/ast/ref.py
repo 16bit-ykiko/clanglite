@@ -1,8 +1,4 @@
-from clanglite.binding.cursor import Cursor
-
-
-class Ref(Cursor):
-    pass
+from .basic import *
 
 
 class TypeRef(Ref):

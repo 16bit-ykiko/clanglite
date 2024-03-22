@@ -1,8 +1,9 @@
 from os import fspath
 from ctypes import c_char_p
-from clanglite.binding.config import dll, CXIndex, CXTranslationUnit
-from clanglite.binding.cursor import Cursor
 from typing import Callable, TypeVar, Any
+
+from .cursor import Cursor
+from .config import dll, CXIndex, CXTranslationUnit
 
 
 class Index(CXIndex):

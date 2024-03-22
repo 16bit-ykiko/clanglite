@@ -1,8 +1,4 @@
-from clanglite.binding.cursor import Cursor
-
-
-class Attr(Cursor):
-    pass
+from .basic import *
 
 
 class UnexposedAttr(Attr):

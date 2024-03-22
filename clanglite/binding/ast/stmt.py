@@ -1,8 +1,4 @@
-from clanglite.binding.cursor import Cursor
-
-
-class Stmt(Cursor):
-    pass
+from .basic import *
 
 
 class UnexposedStmt(Stmt):

@@ -1,6 +1,6 @@
-from clanglite.binding.config import dll, CXCursor
+from .config import dll, CXCursor
+from .location import SourceLocation, SourceRange
 from ctypes import py_object, c_uint, CFUNCTYPE
-from clanglite.binding.location import SourceLocation, SourceRange
 
 
 class Cursor(CXCursor):

@@ -1,15 +1,4 @@
-from clanglite.binding.config import dll
-from clanglite.binding.cursor import Cursor
-from clanglite.binding.type import Type
-from clanglite.binding.ast.expr import Expr
-from clanglite.binding.ast.attr import Attr
-
-
-class Decl(Cursor):
-
-    def attributes(self) -> list[Attr]:
-        """get the attributes of a declaration."""
-        return []
+from .basic import *
 
 
 class UnexposedDecl(Decl):

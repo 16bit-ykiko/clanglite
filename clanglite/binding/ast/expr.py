@@ -1,20 +1,4 @@
-from clanglite.binding.config import dll
-from clanglite.binding.cursor import Cursor
-from clanglite.binding.type import Type
-
-
-class Expr(Cursor):
-
-    @property
-    def type(self) -> Type:
-        """get the type of the expression"""
-        return dll.clang_getCursorType(self)
-
-    @property
-    def is_constant(self) -> bool:
-        """judge an expression can be constant"""
-        # TODO add is constant expression to libclang
-        return False
+from .basic import *
 
 
 class UnexposedExpr(Expr):

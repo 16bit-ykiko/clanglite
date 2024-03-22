@@ -1,4 +1,4 @@
-from clanglite.binding.cursor import Cursor
+from .basic import *
 
 
 class TranslationUnit(Cursor):

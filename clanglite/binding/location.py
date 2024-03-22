@@ -1,6 +1,6 @@
 
 from ctypes import c_uint, byref
-from clanglite.binding.config import dll, CXSourceLocation, CXSourceRange, CXFile
+from .config import dll, CXSourceLocation, CXSourceRange, CXFile
 
 
 class File(CXFile):

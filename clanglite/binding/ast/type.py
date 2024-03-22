@@ -1,4 +1,4 @@
-from clanglite.binding.config import dll, CXType
+from ..config import dll, CXType
 
 
 class Type(CXType):
