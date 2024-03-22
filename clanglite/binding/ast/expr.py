@@ -49,8 +49,58 @@ class CallExpr(Expr):
     __cursor_kind__ = 103
 
     @property
-    def caller(self) -> Expr:
-        return Expr(self.get_children()[0])
+    def _call_kind(self) -> int:
+        if not hasattr(self, "_call_kind_"):
+            self._call_kind_ = dll.clang_getCursorCallExprKind(self)
+        return self._call_kind_
+
+    def is_operator_call(self) -> bool:
+        """
+        Check if the call expression is an overloaded operator call.
+        """
+        return self._call_kind == 2
+
+    def is_member_call(self) -> bool:
+        """
+        Check if the call expression is a member function call.
+        """
+        return self._call_kind == 3
+
+    def is_constructor_call(self) -> bool:
+        """
+        Check if the call expression is a constructor call.
+        """
+        return self._call_kind == 5
+
+    def is_inherited_constructor_call(self) -> bool:
+        """
+        Check if the call expression is an inherited constructor initialized call.
+        """
+        return self._call_kind == 6
+
+    def is_temporary_object(self) -> bool:
+        """
+        Check if the call expression is a temporary object creation.
+        """
+        return self._call_kind == 7
+
+    def is_unresolved_constructor_call(self) -> bool:
+        """
+        Check if the call expression is an unresolved constructor call.
+        """
+        return self._call_kind == 8
+
+    def is_user_defined_literal(self) -> bool:
+        """
+        Check if the call expression is a user-defined literal.
+        """
+        return self._call_kind == 9
+
+    def arguments(self) -> list[Expr]:
+        """
+        Get the arguments of the call expression.
+        """
+        return [Expr(c) for c in self.get_children() if c.kind == Expr]
 
 
 class BlockExpr(Expr):
@@ -144,12 +194,11 @@ class UnaryExpr(Expr):
 
 
 # The BuiltinBinaryExpr is a combination of libclang's BinaryOperator and CompoundAssignOperator
-class BinaryExpr(Expr):
+class BuiltinBinaryExpr(Expr):
     """
-    A binary operator expression.
+    A builtin-binary operator expression.
+    Such as `1 + 2` and so on. the kind of a overloaded operator call is `CallExpr`.
     """
-
-    # TODO add CXXOperatorCallExpr for overloaded operator
 
     __cursor_kind__ = [114, 115]
     __all_operators__ = [
@@ -161,7 +210,7 @@ class BinaryExpr(Expr):
     @property
     def operator(self) -> str:
         kind: int = dll.clang_getCursorBinaryOperatorKind(self)
-        return BinaryExpr.__all_operators__[kind - 1]
+        return BuiltinBinaryExpr.__all_operators__[kind - 1]
 
     @property
     def lhs(self) -> Expr:

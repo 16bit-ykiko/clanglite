@@ -4,3 +4,4 @@ from .binding.ast.expr import *
 from .binding.ast.other import *
 from .binding.ast.ref import *
 from .binding.ast.stmt import *
+from .binding.parser import Parser
