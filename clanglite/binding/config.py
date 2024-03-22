@@ -109,7 +109,7 @@ functions: list[Any] = [
     ("clang_getCursorDisplayName", [CXCursor], CXString),
     ("clang_Cursor_getMangling", [CXCursor], CXString),
 
-    
+
     ("clang_equalCursors", [CXCursor, CXCursor], c_uint),
     ("clang_Cursor_isNull", [CXCursor], c_uint),
     ("clang_hashCursor", [CXCursor], c_uint),
@@ -127,6 +127,9 @@ functions: list[Any] = [
     # CXOperator
     ("clang_getCursorUnaryOperatorKind", [CXCursor], c_int),
     ("clang_getCursorBinaryOperatorKind", [CXCursor], c_int),
+
+    # CXCallExpr
+    ("clang_getCursorCallExprKind", [CXCursor], c_int),
 
     # CXType
 

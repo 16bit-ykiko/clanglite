@@ -1,9 +1,9 @@
-from os import fspath
+from os import fspath, path
 from ctypes import c_char_p
 from typing import Callable, TypeVar, Any
 
 from .cursor import Cursor
-from .config import dll, CXIndex, CXTranslationUnit
+from .config import dll, CXIndex, CXTranslationUnit, CXUnsavedFile
 
 
 class Index(CXIndex):
@@ -15,9 +15,30 @@ class Index(CXIndex):
     def create(cxx: int = 0, exclude_decls: int = 0) -> 'Index':
         return Index(dll.clang_createIndex(cxx, exclude_decls))
 
-    def parse(self, filepath: str, args: list[str]) -> 'TranslationUnit':
+    def parse(self, filepath: str, args: list[str], unsaved_files: list[tuple[str, str]] = []) -> 'TranslationUnit':
+        if unsaved_files == [] and not path.exists(filepath):
+            raise ValueError(f"File {filepath} does not exist")
+
         fpath = c_char_p(fspath(filepath).encode("utf8"))
-        return TranslationUnit(dll.clang_parseTranslationUnit(self, fpath, None, 0, None, 0, 0))
+
+        args_array = None if len(args) == 0 else (
+            c_char_p * len(args))(*[x.encode("utf8") for x in args])
+
+        unsaved_array = None
+        if len(unsaved_files) > 0:
+            unsaved_array = (CXUnsavedFile * len(unsaved_files))()
+            for i, (name, contents) in enumerate(unsaved_files):
+                unsaved_array[i].filename = c_char_p(fspath(name).encode("utf8"))
+                unsaved_array[i].contents = c_char_p(contents.encode("utf8"))
+                unsaved_array[i].length = len(contents)
+
+        ptr: CXTranslationUnit = dll.clang_parseTranslationUnit(
+            self, fpath, args_array, len(args), unsaved_array, len(unsaved_files), 0)
+
+        if not ptr:
+            raise ValueError("Failed to parse translation unit")
+
+        return TranslationUnit(ptr)
 
     def __del__(self) -> None:
         dll.clang_disposeIndex(self)
@@ -47,11 +68,11 @@ T = TypeVar('T')
 
 class Parser:
 
-    def __init__(self, filepath: str, args: list[str] = []) -> None:
+    def __init__(self, filepath: str, args: list[str] = [], unsaved_files: list[tuple[str, str]] = []) -> None:
         self.filepath = filepath
         self.args = args
         self.index = Index.create()
-        self.tu = self.index.parse(filepath, args)
+        self.tu = self.index.parse(filepath, args, unsaved_files)
         self.matchers: dict[type, Any] = {}
 
     def add_matcher(self, cls: type[T], matcher: Callable[[T], Any]) -> None:
