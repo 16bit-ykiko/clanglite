@@ -4,17 +4,20 @@ namespace clanglite
 {
     DeclCallback DeclCallback::instance;
 
+#define MATCH_DECL(NAME)                                                                                                                   \
+    case clang::Decl::Kind::NAME: callback.second(NAME##Decl{decl, &Result.Context}); break;
+
     void DeclCallback::run(const MatchFinder::MatchResult& Result)
     {
-        if(const auto* decl = Result.Nodes.getNodeAs<clang::Decl>("decl"))
+        const clang::Decl* decl = Result.Nodes.getNodeAs<clang::Decl>("decl");
+        assert(decl != nullptr);
+
+        for(auto& callback: callbacks)
         {
-            for(auto& callback: callbacks)
+            switch(decl->getKind())
             {
-                switch(decl->getKind())
-                {
-                    case clang::Decl::Kind::Field: callback.second(FieldDecl{decl, &Result.Context}); break;
-                    default: break;
-                }
+                MATCH_DECL(Field)
+                default: break;
             }
         }
     }
@@ -25,13 +28,49 @@ namespace clanglite
         DeclCallback::instance.callbacks.push_back({kind, f});
     }
 
-    void register_decl(py::module& m)
+    SourceLocation Decl::location()
     {
-        m.def("add_matcher", &add_matcher);
-        Decl::register_(m);
+        const clang::ASTContext& content = cast<clang::Decl>()->getASTContext();
+        const clang::SourceManager& manager = content.getSourceManager();
+        clang::SourceLocation result = cast<clang::Decl>()->getLocation();
+
+        SourceLocation loc;
+        loc._line = manager.getSpellingLineNumber(result);
+        loc._column = manager.getSpellingColumnNumber(result);
+        loc._offset = manager.getFileOffset(result);
+        loc._filepath = manager.getFilename(result).data();
+        loc._filepath_length = manager.getFilename(result).size();
+        return loc;
+    }
+
+    void Decl::register_(py::module& m)
+    {
+        m.def("add_matcher", add_matcher);
+        py::class_<Decl> c(m, "Decl");
+        c.def_property_readonly("location", &Decl::location);
+
         NamedDecl::register_(m);
         FieldDecl::register_(m);
     }
 
+    py::str NamedDecl::name()
+    {
+        auto name = cast<clang::NamedDecl>()->getName();
+        auto f = cast<clang::FieldDecl>();
+        return {name.data(), name.size()};
+    }
+
+    void NamedDecl::register_(py::module& m)
+    {
+        py::class_<NamedDecl, Decl> c(m, "NamedDecl");
+        c.def_property_readonly("name", &NamedDecl::name);
+    }
+
+    void FieldDecl::register_(py::module& m)
+    {
+        py::class_<FieldDecl, NamedDecl> c(m, "FieldDecl");
+        static int kind = clang::Decl::Kind::Field;
+        c.def_readonly_static("_kind_", &kind);
+    }
 }  // namespace clanglite
 
