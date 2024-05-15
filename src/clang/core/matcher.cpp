@@ -1,10 +1,14 @@
 
-#include <clanglite/clang/core.h>
-#include <clanglite/binding/ast/stmt.h>
+#include <clanglite/core/core.h>
+
+#include <clang/Tooling/Tooling.h>
+#include <llvm/Support/CommandLine.h>
+#include <clang/ASTMatchers/ASTMatchFinder.h>
+#include <clang/Tooling/CommonOptionsParser.h>
 
 namespace clanglite
 {
-    
+
     struct StmtMatcher : public clang::ast_matchers::MatchFinder::MatchCallback
     {
         using Callback = std::function<void(Stmt)>;
@@ -25,7 +29,18 @@ namespace clanglite
         }
     };
 
-    int run(int argc, const char** argv)
+    ClangTool::ClangTool() { impl = new StmtMatcher(); }
+
+    ClangTool::~ClangTool() { delete static_cast<StmtMatcher*>(impl); }
+
+    void ClangTool::add_stmt_matcher(int stmt_kind,
+                                     const std::function<void(Stmt)>& callback)
+    {
+        static_cast<StmtMatcher*>(impl)->callbacks.insert(
+            std::make_pair(stmt_kind, callback));
+    }
+
+    int ClangTool::run(int argc, const char** argv)
     {
         llvm::outs() << "Running tool\n";
         llvm::cl::OptionCategory MyToolCategory("my-tool options");
@@ -40,7 +55,8 @@ namespace clanglite
 
         clang::ast_matchers::MatchFinder Finder;
 
-        StmtMatcher stmtMatcher;
+        StmtMatcher& stmtMatcher = *static_cast<StmtMatcher*>(impl);
+
         Finder.addMatcher(clang::ast_matchers::stmt().bind("stmt"),
                           &stmtMatcher);
         // Finder.addDynamicMatcher()
