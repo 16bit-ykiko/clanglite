@@ -3,9 +3,13 @@
 
 namespace py = pybind11;
 
-void register_stmt(pybind11::module_& m)
+namespace clanglite
 {
-    using namespace clanglite;
+    void register_stmt(pybind11::module_& m)
+    {
+        using namespace clanglite;
 
-    py::class_<Stmt>(m, "Stmt").def(py::init<>()).def("kind", &Stmt::Kind);
-}
+        py::class_<Stmt>(m, "Stmt").def(py::init<>()).def("kind", &Stmt::Kind);
+    }
+}  // namespace clanglite
+
