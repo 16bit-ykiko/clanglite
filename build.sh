@@ -1,3 +1,4 @@
+python3 scripts/generate.py
 cmake -B build \
 -DCMAKE_BUILD_TYPE=Release \
 -G Ninja \

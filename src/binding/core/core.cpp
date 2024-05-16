@@ -4,8 +4,6 @@
 
 namespace py = pybind11;
 
-#define PYBIND11_DETAILED_ERROR_MESSAGES 1
-
 PYBIND11_MODULE(clanglite, m)
 {
     using namespace clanglite;

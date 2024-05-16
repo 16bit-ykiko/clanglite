@@ -9,7 +9,7 @@ def is_ignored(cursor: CX.Cursor):
                 return True
 
 
-def traverse(tu: CX.TranslationUnit, name: str):
+def source(namespace: CX.Cursor, name: str):
     result = f"""
 #include <pybind11/pybind11.h>
 #include <clanglite/ast/{name}.h>
@@ -19,16 +19,6 @@ namespace py = pybind11;
 namespace clanglite{{
 
 void register_{name}(py::module &m){{"""
-
-    namespace: CX.Cursor | None = None
-
-    for node in tu.cursor.get_children():
-        if node.kind == CX.CursorKind.NAMESPACE and node.spelling == "clanglite":
-            if not is_ignored(node):
-                namespace = node
-                break
-
-    assert namespace is not None
 
     for cls in namespace.get_children():
         result += f'py::class_<{cls.spelling}>(m, "{cls.spelling}")\n'
@@ -45,6 +35,38 @@ void register_{name}(py::module &m){{"""
     return result
 
 
+def typing(namespace: CX.Cursor, name: str):
+    result = "from .basic import *\n"
+    for cls in namespace.get_children():
+        result += f'class {cls.spelling}:\n'
+        result += f'    def __init__(self, {name}: {name.capitalize()}) -> None: pass\n'
+
+        for fn in cls.get_children():
+            if fn.kind == CX.CursorKind.CXX_METHOD:
+                if is_ignored(fn):
+                    continue
+                result += f'    @property\n'
+                result += f'    def {fn.spelling}(self) -> {fn.result_type.spelling}: pass\n'
+
+        result += '\n'
+    return result
+
+
+def traverse(tu: CX.TranslationUnit, name: str):
+
+    namespace: CX.Cursor | None = None
+
+    for node in tu.cursor.get_children():
+        if node.kind == CX.CursorKind.NAMESPACE and node.spelling == "clanglite":
+            if not is_ignored(node):
+                namespace = node
+                break
+
+    assert namespace is not None
+
+    return source(namespace, name), typing(namespace, name)
+
+
 def generate(name: str):
     index = CX.Index.create()
     header = path.join("include/clanglite/ast", name + ".h")
@@ -54,9 +76,12 @@ def generate(name: str):
         tu = index.parse("src.cpp", args=["-I./include",
                          "-std=c++20"], unsaved_files=[("src.cpp", src)])
 
-        result = traverse(tu, name)
+        source, typing = traverse(tu, name)
         with open("src/binding/ast/" + name + ".cpp", "w") as f:
-            f.write(result)
+            f.write(source)
+
+        with open("clanglite/typings/" + name + ".pyi", "w") as f:
+            f.write(typing)
 
 
 def main():
