@@ -22,6 +22,9 @@ namespace clanglite
 
             auto range = callbacks.equal_range(stmt->getStmtClass());
 
+            llvm::outs() << "Found stmt: " << stmt->getStmtClassName()
+                         << " Kind: " << stmt->getStmtClass() << "\n";
+
             for(auto it = range.first; it != range.second; ++it)
             {
                 it->second(Stmt(stmt, Result.Context));

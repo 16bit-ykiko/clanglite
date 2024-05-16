@@ -2,19 +2,8 @@
 
 #include <clanglite/basic.h>
 
-
-
 namespace clanglite
 {
-
-
-    struct Stmt
-    {
-        const void* data = nullptr;
-        const void* context = nullptr;
-
-        int Kind();
-    };
 
     struct DeclStmt : Stmt
     {
@@ -66,6 +55,10 @@ namespace clanglite
 
     struct ForStmt : Stmt
     {
+        Decl init();
+        Expr condition();
+        Expr increment();
+        Stmt body();
     };
 
     struct GotoStmt : Stmt
