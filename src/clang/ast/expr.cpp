@@ -9,4 +9,10 @@ namespace clanglite
         return expr->getStmtClass();
     }
 
+    std::string_view Expr::kind_spelling()
+    {
+        const clang::Expr* expr = static_cast<const clang::Expr*>(data);
+        return expr->getStmtClassName();
+    }
+
 }  // namespace clanglite

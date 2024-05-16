@@ -17,6 +17,7 @@ namespace clanglite [[clang::annotate("ignore")]]
         const void* context = nullptr;
 
         int kind();
+        std::string_view kind_spelling();
     };
 
     struct Expr
@@ -25,6 +26,7 @@ namespace clanglite [[clang::annotate("ignore")]]
         const void* context = nullptr;
 
         int kind();
+        std::string_view kind_spelling();
     };
 
     struct Type;
@@ -35,6 +37,7 @@ namespace clanglite [[clang::annotate("ignore")]]
         const void* context = nullptr;
 
         int kind();
+        std::string_view kind_spelling();
     };
 
     extern void register_basic(pybind11::module_& m);

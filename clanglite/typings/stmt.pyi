@@ -1,41 +1,50 @@
 from .basic import *
-class DeclStmt:
+class DeclStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class NullStmt:
+class NullStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class CompoundStmt:
+class CompoundStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class CaseStmt:
+class CaseStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class DefaultStmt:
+class DefaultStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class ValueStmt:
+class LabelStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class LabelStmt:
+class AttributedStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class AttributedStmt:
+class IfStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class IfStmt:
+class SwitchStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class SwitchStmt:
+class WhileStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class WhileStmt:
+class DoStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class DoStmt:
-    def __init__(self, stmt: Stmt) -> None: pass
-
-class ForStmt:
+class ForStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
     @property
     def init(self) -> Decl: pass
@@ -46,24 +55,27 @@ class ForStmt:
     @property
     def body(self) -> Stmt: pass
 
-class GotoStmt:
+class GotoStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class IndirectGotoStmt:
+class IndirectGotoStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class ContinueStmt:
+class ContinueStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class BreakStmt:
+class BreakStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class ReturnStmt:
+class ReturnStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 
-class ASMStmt:
-    def __init__(self, stmt: Stmt) -> None: pass
-
-class GCCASMSStmt:
+class GCCASMSStmt(Stmt):
+    __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
 

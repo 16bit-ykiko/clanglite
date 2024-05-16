@@ -21,7 +21,8 @@ namespace clanglite{{
 void register_{name}(py::module &m){{"""
 
     for cls in namespace.get_children():
-        result += f'py::class_<{cls.spelling}>(m, "{cls.spelling}")\n'
+        result += f'py::class_<{cls.spelling}, {name.capitalize()}>(m, "{cls.spelling}")\n'
+        result += f'.def_readonly_static("__kind__", &{cls.spelling}::kind)\n'
         result += f'.def(py::init<>([]({name.capitalize()} {name}){{ return {cls.spelling}({name}); }}))\n'
 
         for fn in cls.get_children():
@@ -38,7 +39,8 @@ void register_{name}(py::module &m){{"""
 def typing(namespace: CX.Cursor, name: str):
     result = "from .basic import *\n"
     for cls in namespace.get_children():
-        result += f'class {cls.spelling}:\n'
+        result += f'class {cls.spelling}({name.capitalize()}):\n'
+        result += f'    __kind__: int\n'
         result += f'    def __init__(self, {name}: {name.capitalize()}) -> None: pass\n'
 
         for fn in cls.get_children():
@@ -86,6 +88,8 @@ def generate(name: str):
 
 def main():
     generate("stmt")
+    generate("expr")
+    generate("decl")
 
 
 if __name__ == "__main__":

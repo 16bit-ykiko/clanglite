@@ -8,15 +8,15 @@ namespace clanglite
     void register_basic(pybind11::module_& m)
     {
         py::class_<Decl>(m, "Decl")
-            .def(py::init<>())
-            .def_property_readonly("kind", &Decl::kind);
+            .def_property_readonly("kind", &Decl::kind)
+            .def_property_readonly("kind_spelling", &Decl::kind_spelling);
 
         py::class_<Expr>(m, "Expr")
-            .def(py::init<>())
-            .def_property_readonly("kind", &Expr::kind);
+            .def_property_readonly("kind", &Expr::kind)
+            .def_property_readonly("kind_spelling", &Expr::kind_spelling);
 
         py::class_<Stmt>(m, "Stmt")
-            .def(py::init<>())
-            .def_property_readonly("kind", &Stmt::kind);
+            .def_property_readonly("kind", &Stmt::kind)
+            .def_property_readonly("kind_spelling", &Stmt::kind_spelling);
     }
 }  // namespace clanglite

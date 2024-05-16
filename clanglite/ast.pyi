@@ -1,5 +1,8 @@
 from typing import Callable
 from .typings.stmt import *
+from .typings.decl import *
+from .typings.expr import *
+
 
 
 class ClangTool:
