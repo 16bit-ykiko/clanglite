@@ -3,7 +3,7 @@
 
 namespace clanglite
 {
-    int Stmt::Kind()
+    int Stmt::kind()
     {
         const clang::Stmt* stmt = static_cast<const clang::Stmt*>(data);
         return stmt->getStmtClass();

@@ -3,7 +3,7 @@
 
 namespace clanglite
 {
-    int Decl::Kind()
+    int Decl::kind()
     {
         const clang::Decl* decl = static_cast<const clang::Decl*>(data);
         return decl->getKind();

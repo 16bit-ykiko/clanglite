@@ -3,7 +3,7 @@
 
 namespace clanglite
 {
-    int Expr::Kind()
+    int Expr::kind()
     {
         const clang::Expr* expr = static_cast<const clang::Expr*>(data);
         return expr->getStmtClass();

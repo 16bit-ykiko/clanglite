@@ -8,8 +8,6 @@ namespace clanglite
 
     void register_decl(pybind11::module_& m)
     {
-        py::class_<Decl>(m, "Decl")
-            .def(py::init<>())
-            .def_property_readonly("kind", &Decl::Kind);
+
     }
 }  // namespace clanglite

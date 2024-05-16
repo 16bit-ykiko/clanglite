@@ -7,7 +7,7 @@ namespace pybind11
     class module_;
 }
 
-namespace clanglite
+namespace clanglite [[clang::annotate("ignore")]]
 {
     struct Attr;
 
@@ -16,7 +16,7 @@ namespace clanglite
         const void* data = nullptr;
         const void* context = nullptr;
 
-        int Kind();
+        int kind();
     };
 
     struct Expr
@@ -24,7 +24,7 @@ namespace clanglite
         const void* data = nullptr;
         const void* context = nullptr;
 
-        int Kind();
+        int kind();
     };
 
     struct Type;
@@ -34,10 +34,11 @@ namespace clanglite
         const void* data = nullptr;
         const void* context = nullptr;
 
-        int Kind();
+        int kind();
     };
 
+    extern void register_basic(pybind11::module_& m);
     extern void register_decl(pybind11::module_& m);
     extern void register_expr(pybind11::module_& m);
     extern void register_stmt(pybind11::module_& m);
-}  // namespace clanglite
+}  // namespace clang::annotate("ignore")
