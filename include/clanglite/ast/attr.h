@@ -1,7 +1,6 @@
 #pragma once
 
-#include <clanglite/basic.h>
-
+#include "basic.h"
 
 namespace clanglite
 {

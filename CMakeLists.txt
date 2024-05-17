@@ -40,5 +40,5 @@ target_link_libraries(clangtool PRIVATE
 include_directories(external/pybind11/include)
 add_subdirectory(external/pybind11)
 file(GLOB_RECURSE BINDING_SOURCES "src/binding/*.cpp")
-pybind11_add_module(clanglite ${BINDING_SOURCES})
-target_link_libraries(clanglite PRIVATE clangtool)
+pybind11_add_module(internal ${BINDING_SOURCES})
+target_link_libraries(internal PRIVATE clangtool)

@@ -2,30 +2,26 @@
 import sys
 import os
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 if __name__ == "__main__":
-    from clanglite.ast import *
-    from typing import Callable, TypeVar
+    from clanglite.Core import *
+    # from clanglite.AST import *
+    import clanglite.AST as AST
 
-    T = TypeVar("T")
+    # classes = inspect.getmembers(AST)
+#
+    # for name, cls in classes:
+    #    if inspect.isclass(cls):
+    #        print(name, cls)
 
-    class Tool:
-        def __init__(self) -> None:
-            self.tool = ClangTool()
+    tool = ClangTool()
 
-        def add_stmt_matcher(self, cls: type[T], callback: Callable[[T], None]) -> None:
-            self.tool.add_stmt_matcher(cls.__kind__, callback)  # type: ignore
-
-        def run(self) -> None:
-            self.tool.run()
-
-    tool = Tool()
-
-    def callback(stmt: IfStmt) -> None:
+    def callback(stmt: AST.IfStmt) -> None:
         print("find stmt: ", stmt.kind_spelling)
 
-    tool.add_stmt_matcher(IfStmt, callback)
+    tool.add_stmt_matcher(AST.IfStmt, callback)
 
     tool.run()

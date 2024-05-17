@@ -7,5 +7,5 @@ cmake -B build \
 -DCMAKE_C_COMPILER=clang 
 
 cmake --build build
-cp build/clanglite.cpython-310-x86_64-linux-gnu.so clanglite/clanglite.cpython-310-x86_64-linux-gnu.so
+cp build/internal.cpython-310-x86_64-linux-gnu.so clanglite/internal.cpython-310-x86_64-linux-gnu.so
 
