@@ -22,7 +22,9 @@ namespace clanglite
                      int result = tool.run(3, argv);
                      return result;
                  })
-            .def("add_stmt_matcher", &ClangTool::add_stmt_matcher);
+            .def("add_stmt_matcher", &ClangTool::add_stmt_matcher)
+            .def("add_expr_matcher", &ClangTool::add_expr_matcher)
+            .def("add_decl_matcher", &ClangTool::add_decl_matcher);
     }
 }  // namespace clanglite
 

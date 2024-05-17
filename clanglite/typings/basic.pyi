@@ -20,3 +20,14 @@ class Stmt:
 
     @property
     def kind_spelling(self) -> str: pass
+
+
+class Type:
+    @property
+    def spelling(self) -> str: pass
+
+    def is_const(self) -> bool: pass
+
+    def is_volatile(self) -> bool: pass
+
+    def is_restrict(self) -> bool: pass

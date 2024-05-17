@@ -27,12 +27,20 @@ class ClangTool:
     def __init__(self) -> None:
         self.tool = Core.ClangTool()  # type: ignore
 
-    def add_stmt_matcher(self, cls: type[T], callback: Callable[[T], None]) -> None:
+    def add_matcher(self, cls: type[T], callback: Callable[[T], None]) -> None:
         kind: int = cls.__kind__  # type: ignore
         if issubclass(cls, AST.Stmt):
             def wrapper(node: Any) -> None:
                 callback(self.cache.stmts[kind](node))
             self.tool.add_stmt_matcher(kind, wrapper)  # type: ignore
+        elif issubclass(cls, AST.Expr):
+            def wrapper(node: Any) -> None:
+                callback(self.cache.exprs[kind](node))
+            self.tool.add_expr_matcher(kind, wrapper)  # type: ignore
+        elif issubclass(cls, AST.Decl):
+            def wrapper(node: Any) -> None:
+                callback(self.cache.decls[kind](node))
+            self.tool.add_decl_matcher(kind, wrapper)  # type: ignore
 
     def run(self) -> None:
         self.tool.run()  # type: ignore

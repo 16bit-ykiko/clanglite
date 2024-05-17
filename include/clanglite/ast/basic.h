@@ -24,7 +24,24 @@ namespace clanglite [[clang::annotate("ignore")]]
         std::string_view kind_spelling();
     };
 
-    struct Type;
+    struct Type
+    {
+        char data[8];
+        const void* context = nullptr;
+
+        template <typename T, typename U = std::decay_t<T>>
+            requires (std::is_trivially_copyable_v<U> && sizeof(U) <= 8)
+        Type(T&& t, const void* context)
+        {
+            ::new (data) T(std::forward<T>(t));
+            this->context = context;
+        }
+
+        std::string spelling();
+        bool is_const();
+        bool is_volatile();
+        bool is_restrict();
+    };
 
     struct Stmt
     {

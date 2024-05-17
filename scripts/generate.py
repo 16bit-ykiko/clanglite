@@ -8,6 +8,17 @@ def is_ignored(cursor: CX.Cursor):
             if attr.spelling == "ignore":
                 return True
 
+    return False
+
+
+def is_property(cursor: CX.Cursor):
+    for attr in cursor.get_children():
+        if attr.kind == CX.CursorKind.ANNOTATE_ATTR:
+            if attr.spelling == "property":
+                return True
+
+    return False
+
 
 def source(namespace: CX.Cursor, name: str):
     result = f"""
@@ -29,7 +40,10 @@ void register_{name}(py::module &m){{"""
             if fn.kind == CX.CursorKind.CXX_METHOD:
                 if is_ignored(fn):
                     continue
-                result += f'.def_property_readonly("{fn.spelling}", &{cls.spelling}::{fn.spelling})\n'
+                if is_property(fn):
+                    result += f'.def_property_readonly("{fn.spelling}", &{cls.spelling}::{fn.spelling})\n'
+                else:
+                    result += f'.def("{fn.spelling}", &{cls.spelling}::{fn.spelling})\n'
         result += ';\n\n'
 
     result += "}\n}"
@@ -47,7 +61,8 @@ def typing(namespace: CX.Cursor, name: str):
             if fn.kind == CX.CursorKind.CXX_METHOD:
                 if is_ignored(fn):
                     continue
-                result += f'    @property\n'
+                if is_property(fn):
+                    result += f'    @property\n'
                 result += f'    def {fn.spelling}(self) -> {fn.result_type.spelling}: pass\n'
 
         result += '\n'

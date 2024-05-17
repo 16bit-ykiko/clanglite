@@ -18,5 +18,11 @@ namespace clanglite
         py::class_<Stmt>(m, "Stmt")
             .def_property_readonly("kind", &Stmt::kind)
             .def_property_readonly("kind_spelling", &Stmt::kind_spelling);
+
+        py::class_<Type>(m, "Type")
+            .def_property_readonly("spelling", &Type::spelling)
+            .def("is_const", &Type::is_const)
+            .def("is_volatile", &Type::is_volatile)
+            .def("is_restrict", &Type::is_restrict);
     }
 }  // namespace clanglite

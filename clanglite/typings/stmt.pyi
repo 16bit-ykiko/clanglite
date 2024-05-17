@@ -46,14 +46,10 @@ class DoStmt(Stmt):
 class ForStmt(Stmt):
     __kind__: int
     def __init__(self, stmt: Stmt) -> None: pass
-    @property
-    def init(self) -> int: pass
-    @property
-    def condition(self) -> int: pass
-    @property
-    def increment(self) -> int: pass
-    @property
-    def body(self) -> int: pass
+    def init(self) -> Decl: pass
+    def condition(self) -> Expr: pass
+    def increment(self) -> Expr: pass
+    def body(self) -> Stmt: pass
 
 class GotoStmt(Stmt):
     __kind__: int
